@@ -7,10 +7,10 @@
 
 // General settings
 #define BAUD_RATE 115200
-#define MS_WAIT 10
+#define POLL_PERIOD_US 1000
 
 // Sensor settings
-#define DEBUG_SENSORS 1
+#define DEBUG_SENSORS 0
 #define AREF    3.3
 #define ARES 4095.0
 #define PSI_FACTOR 0.01450377377
@@ -27,13 +27,13 @@
 // Mouse settings
 #define DEBUG_CLICKS 0
 #define DEBUG_PTR 0
-#define PTR_SPEED 5
-#define ENABLE_MOUSE 5
+#define PTR_SPEED 2
+#define ENABLE_MOUSE 1
 
 
 Adafruit_MPRLS mpr = Adafruit_MPRLS(RESET_PIN, EOC_PIN);
 
-float scale(int analog_read_val);
+float scale(int);
 
 void risingPufCallback();
 void fallingPufCallback();
@@ -58,6 +58,7 @@ void setup() {
 }
 
 void loop() {
+  long usDeadline = micros() + POLL_PERIOD_US;
   float vA2 = scale(analogRead(A2)); // enable
   if(vA2 > 3.0) {
     // Read sensors
@@ -111,11 +112,17 @@ void loop() {
     Mouse.move(x * PTR_SPEED, -y * PTR_SPEED, 0);
     
   }
-  delay(MS_WAIT);
+  long usUntilDeadline = usDeadline - micros();
+  if (usUntilDeadline > POLL_PERIOD_US) {
+    return; // rollover, don't try to correct
+  }
+  if (usUntilDeadline > 0){
+    delay(usUntilDeadline);
+  }
 }
 
-float scale(int analog_read_val) {
-  return analog_read_val * (AREF / ARES);
+float scale(int analogVal) {
+  return analogVal * (AREF / ARES);
 }
 
 void risingPufCallback() {
