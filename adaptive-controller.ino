@@ -11,15 +11,15 @@
 
 // Sensor settings
 #define DEBUG_SENSORS 0
-#define AREF    5.0
+#define AREF    3.3
 #define ARES 1023.0
 #define PSI_FACTOR 0.01450377377
 #define RESET_PIN  -1
 #define EOC_PIN    5
 
 // Detection settings
-#define POT_CENTER    2.5
-#define POT_THRESHOLD 0.25
+#define POT_CENTER    1.65
+#define POT_THRESHOLD 0.15
 #define ATM_PRESSURE  14.4
 #define SIP_THRESHOLD 11.0
 #define PUF_THRESHOLD 15.5
@@ -27,7 +27,7 @@
 // Mouse settings
 #define DEBUG_CLICKS 0
 #define DEBUG_PTR 0
-#define PTR_SPEED 1
+#define PTR_SPEED 2
 #define ENABLE_MOUSE 5
 
 
@@ -41,11 +41,11 @@ void fallingPufCallback();
 void risingSipCallback();
 void fallingSipCallback();
 
-void axis0PositiveCallback();
-void axis0NegativeCallback();
+void axis0PositiveCallback(char);
+void axis0NegativeCallback(char);
 
-void axis1PositiveCallback();
-void axis1NegativeCallback();
+void axis1PositiveCallback(char);
+void axis1NegativeCallback(char);
 
 float lastPressure;
 
@@ -99,18 +99,18 @@ void loop() {
 
     // Detect axis 0 position
     if(vA0 > POT_CENTER + POT_THRESHOLD) {
-      axis0PositiveCallback();
+      axis0PositiveCallback(vA0);
     }
     else if(vA0 < POT_CENTER - POT_THRESHOLD) {
-      axis0NegativeCallback();
+      axis0NegativeCallback(5 - vA0);
     }
     
     // Detect axis 1 position
     if(vA1 > POT_CENTER + POT_THRESHOLD) {
-      axis1NegativeCallback(); // note that this is swapped
+      axis1NegativeCallback(vA1); // note that this is swapped
     }
     else if(vA1 < POT_CENTER - POT_THRESHOLD) {
-      axis1PositiveCallback(); // with this
+      axis1PositiveCallback(5 - vA1); // with this
     }
     
   }
@@ -137,19 +137,19 @@ void fallingSipCallback() {
   if(DEBUG_CLICKS) {Serial.println("left release");}
   Mouse.release(MOUSE_LEFT);
 }
-void axis0PositiveCallback() {
+void axis0PositiveCallback(char mag) {
   if(DEBUG_PTR) {Serial.println("axis 0 +");}
-  Mouse.move(PTR_SPEED, 0, 0);
+  Mouse.move(PTR_SPEED * mag, 0, 0);
 }
-void axis0NegativeCallback() {
+void axis0NegativeCallback(char mag) {
   if(DEBUG_PTR) {Serial.println("axis 0 -");}
-  Mouse.move(-PTR_SPEED, 0, 0);
+  Mouse.move(PTR_SPEED * -mag, 0, 0);
 }
-void axis1PositiveCallback() {
+void axis1PositiveCallback(char mag) {
   if(DEBUG_PTR) {Serial.println("axis 1 +");}
-  Mouse.move(0, PTR_SPEED, 0);
+  Mouse.move(0, PTR_SPEED * mag, 0);
 }
-void axis1NegativeCallback() {
+void axis1NegativeCallback(char mag) {
   if(DEBUG_PTR) {Serial.println("axis 1 -");}
-  Mouse.move(0, -PTR_SPEED, 0);
+  Mouse.move(0, PTR_SPEED * -mag, 0);
 }
