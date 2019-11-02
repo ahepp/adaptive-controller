@@ -10,7 +10,7 @@
 #define MS_WAIT 10
 
 // Sensor settings
-#define DEBUG_SENSORS 0
+#define DEBUG_SENSORS 1
 #define AREF    3.3
 #define ARES 1023.0
 #define PSI_FACTOR 0.01450377377
@@ -27,7 +27,7 @@
 // Mouse settings
 #define DEBUG_CLICKS 0
 #define DEBUG_PTR 0
-#define PTR_SPEED 2
+#define PTR_SPEED 5
 #define ENABLE_MOUSE 5
 
 
@@ -40,12 +40,6 @@ void fallingPufCallback();
 
 void risingSipCallback();
 void fallingSipCallback();
-
-void axis0PositiveCallback(char);
-void axis0NegativeCallback(char);
-
-void axis1PositiveCallback(char);
-void axis1NegativeCallback(char);
 
 float lastPressure;
 
@@ -94,24 +88,26 @@ void loop() {
     else if (lastPressure < SIP_THRESHOLD) {
       fallingSipCallback();
     }
-
     lastPressure = pressure;
 
-    // Detect axis 0 position
+    // Move ptr
+    char x = 0;
+    char y = 0;
     if(vA0 > POT_CENTER + POT_THRESHOLD) {
-      axis0PositiveCallback(vA0);
+      x = vA0;
     }
     else if(vA0 < POT_CENTER - POT_THRESHOLD) {
-      axis0NegativeCallback(5 - vA0);
+      x = vA0 - AREF;
     }
     
     // Detect axis 1 position
     if(vA1 > POT_CENTER + POT_THRESHOLD) {
-      axis1NegativeCallback(vA1); // note that this is swapped
+      y = vA1;
     }
     else if(vA1 < POT_CENTER - POT_THRESHOLD) {
-      axis1PositiveCallback(5 - vA1); // with this
+      y = vA1 - AREF;
     }
+    Mouse.move(x * PTR_SPEED, -y * PTR_SPEED, 0);
     
   }
   delay(MS_WAIT);
@@ -136,20 +132,4 @@ void risingSipCallback() {
 void fallingSipCallback() {
   if(DEBUG_CLICKS) {Serial.println("left release");}
   Mouse.release(MOUSE_LEFT);
-}
-void axis0PositiveCallback(char mag) {
-  if(DEBUG_PTR) {Serial.println("axis 0 +");}
-  Mouse.move(PTR_SPEED * mag, 0, 0);
-}
-void axis0NegativeCallback(char mag) {
-  if(DEBUG_PTR) {Serial.println("axis 0 -");}
-  Mouse.move(PTR_SPEED * -mag, 0, 0);
-}
-void axis1PositiveCallback(char mag) {
-  if(DEBUG_PTR) {Serial.println("axis 1 +");}
-  Mouse.move(0, PTR_SPEED * mag, 0);
-}
-void axis1NegativeCallback(char mag) {
-  if(DEBUG_PTR) {Serial.println("axis 1 -");}
-  Mouse.move(0, PTR_SPEED * -mag, 0);
 }
