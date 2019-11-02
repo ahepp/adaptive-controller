@@ -12,7 +12,7 @@
 // Sensor settings
 #define DEBUG_SENSORS 1
 #define AREF    3.3
-#define ARES 1023.0
+#define ARES 4095.0
 #define PSI_FACTOR 0.01450377377
 #define RESET_PIN  -1
 #define EOC_PIN    5
@@ -45,6 +45,7 @@ float lastPressure;
 
 void setup() {
   Serial.begin(BAUD_RATE);
+  analogReadResolution(12);
   if(ENABLE_MOUSE) {
     Mouse.begin();
   }
